@@ -1,8 +1,11 @@
 ======
- Pharmacie De Garde Scrapping
+Pharmacie De Garde Scrapping
 ======
 
 Scraping and Retrieving Data on Available Duty Pharmacies in Morocco
+
+
+
 .. image:: https://scrapy.org/img/scrapylogo.png
    :target: https://scrapy.org/
    
