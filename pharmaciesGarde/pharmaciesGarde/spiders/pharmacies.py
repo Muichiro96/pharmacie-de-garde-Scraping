@@ -5,19 +5,19 @@ class PharmaciesSpider(scrapy.Spider):
     name = "pharmacies"
     allowed_domains = ["www.annuaire-gratuit.ma"]
     start_urls = ["https://www.annuaire-gratuit.ma/pharmacies"]
+   
+  
     
     def parse(self, response):
         pharmacies = response.css("li[itemprop='itemListElement']")
         
         for pharmacie in pharmacies:
-           
-            yield {
-                'nom' : pharmacie.xpath(".//h3[@itemprop='name']/text()").get(),
-                'ville':pharmacie.xpath(".//span[@itemprop='addressRegion']/text()").get(),
-                'telephone': pharmacie.xpath(".//span[@itemprop='telephone']/text()").get(),
-                    'description':pharmacie.xpath(".//p[@itemprop='description']/text()").get(),
-                    'url': pharmacie.xpath(".//a[@itemprop='url']/@href").get()
-             } 
+            pharmacieURL=pharmacie.xpath(".//a[@itemprop='url']/@href").get()
+            yield scrapy.Request( 
+                url = f"https://www.annuaire-gratuit.ma{pharmacieURL}", 
+                callback = self.data_collect 
+            ) 
+            
         nextPage = response.css('a[class="page-link pagination__next"]::attr(href)').get()
         if nextPage:
             next_url = f"https://www.annuaire-gratuit.ma{nextPage}"
@@ -25,5 +25,14 @@ class PharmaciesSpider(scrapy.Spider):
                 url = next_url, 
                 callback = self.parse 
             ) 
+    def data_collect(self,response):
+        yield{
+            'nom' : response.css("span[itemprop='name']").xpath(".//text()").get(),
+            'ville': response.css("td[itemprop='addressRegion']").xpath(".//text()").get(),
+            'telephone': response.css("a[itemprop='telephone']").xpath(".//text()").get(),
+            'adresse' : response.css("address").xpath(".//text()").get(),
+            'lat&long': response.css("address").xpath(".//a/@href").get().replace("https://maps.google.com/maps?q=","")
+
+        }
         
        
